@@ -1,0 +1,1485 @@
+import { ethers } from 'ethers';
+import axios, { Method } from 'axios';
+import rateLimit from 'axios-rate-limit';
+import { ethErrors } from 'eth-rpc-errors';
+import { createPersistStore } from 'background/utils';
+import { CHAINS, INITIAL_OPENAPI_URL, CHAINS_ENUM } from 'consts';
+import { getChain } from '../../utils';
+import fetchAdapter from '@vespaiach/axios-fetch-adapter';
+import { permissionService } from '.';
+// import { permissionService } from '.';
+
+interface OpenApiConfigValue {
+  path: string;
+  method: Method;
+  params?: string[];
+}
+
+interface OpenApiStore {
+  host: string;
+  config: Record<string, OpenApiConfigValue>;
+}
+
+export interface Chain {
+  id: number;
+  name: string;
+  hex: string;
+  logo: string;
+  enum: CHAINS_ENUM;
+  serverId: string;
+  network: string;
+  nativeTokenSymbol: string;
+  whiteLogo?: string;
+  nativeTokenLogo: string;
+  nativeTokenAddress: string;
+  scanLink: string;
+  thridPartyRPC: string;
+  nativeTokenDecimals: number;
+  selectChainLogo?: string;
+  eip: Record<string, boolean>;
+}
+
+export interface ServerChain {
+  id: string;
+  community_id: number;
+  name: string;
+  native_token_id: string;
+  logo_url: string;
+  wrapped_token_id: string;
+  symbol: string;
+}
+
+export interface ChainWithBalance extends ServerChain {
+  usd_value: number;
+}
+
+export interface ChainWithPendingCount extends ServerChain {
+  pending_tx_count: number;
+}
+
+export type SecurityCheckDecision =
+  | 'pass'
+  | 'warning'
+  | 'danger'
+  | 'forbidden'
+  | 'loading'
+  | 'pending';
+
+export interface SecurityCheckItem {
+  alert: string;
+  id: number;
+}
+
+export interface SecurityCheckResponse {
+  decision: SecurityCheckDecision;
+  alert: string;
+  danger_list: SecurityCheckItem[];
+  warning_list: SecurityCheckItem[];
+  forbidden_list: SecurityCheckItem[];
+  trace_id: string;
+}
+
+export interface Tx {
+  chainId: number;
+  data: string;
+  from: string;
+  gas?: string;
+  gasLimit?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  gasPrice?: string;
+  nonce: string;
+  to: string;
+  value: string;
+  r?: string;
+  s?: string;
+  v?: string;
+}
+
+export interface Eip1559Tx {
+  chainId: number;
+  data: string;
+  from: string;
+  gas: string;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+  nonce: string;
+  to: string;
+  value: string;
+  r?: string;
+  s?: string;
+  v?: string;
+}
+
+export interface TotalBalanceResponse {
+  total_usd_value: number;
+  chain_list: ChainWithBalance[];
+}
+
+export interface TokenItem {
+  content_type?: 'image' | 'image_url' | 'video_url' | 'audio_url' | undefined;
+  content?: string | undefined;
+  inner_id?: any;
+  amount: number;
+  chain: string;
+  decimals: number;
+  symbol: string;
+  display_symbol?: string | null;
+  id: string;
+  is_core: boolean;
+  is_verified: boolean;
+  is_wallet: boolean;
+  is_infinity?: boolean;
+  logo_url: string;
+  name: string;
+  optimized_symbol?: string;
+  price: number;
+  time_at: number;
+  usd_value?: number;
+  raw_amount?: number;
+  raw_amount_hex_str?: string;
+}
+
+export interface NFTApprovalResponse {
+  tokens: NFTApproval[];
+  contracts: NFTApprovalContract[];
+  total: string;
+}
+
+export interface NFTApprovalContract {
+  chain: string;
+  contract_name: string;
+  contract_id: string;
+  amount: string;
+  spender: Spender;
+  is_erc721: boolean;
+  is_erc1155: boolean;
+}
+
+export interface NFTApprovalSpender {
+  id: string;
+  protocol: {
+    id: string;
+    name: string;
+    logo_url: string;
+    chain: string;
+  } | null;
+}
+
+export interface NFTApproval {
+  id: string;
+  contract_id: string;
+  inner_id: string;
+  chain: string;
+  name: null;
+  symbol: string;
+  description: null;
+  content_type: 'image' | 'image_url' | 'video_url' | 'audio_url' | undefined;
+  content: string;
+  total_supply: number;
+  detail_url: string;
+  contract_name: string;
+  is_erc721: boolean;
+  is_erc1155: boolean;
+  amount: string;
+  spender: Spender;
+}
+
+export interface TokenApproval {
+  id: string;
+  name: string;
+  symbol: string;
+  logo_url: string;
+  chain: string;
+  price: number;
+  balance: number;
+  spenders: Spender[];
+  sum_exposure_usd: number;
+  exposure_balance: number;
+}
+
+export interface Spender {
+  id: string;
+  value: number;
+  exposure_usd: number;
+  protocol: {
+    id: string;
+    name: string;
+    logo_url: string;
+    chain: string;
+  };
+  is_contract: boolean;
+  is_open_source: boolean;
+  is_hacked: boolean;
+  is_abandoned: boolean;
+}
+
+export interface AssetItem {
+  id: string;
+  chain: string;
+  name: string;
+  site_url: string;
+  logo_url: string;
+  has_supported_portfolio: boolean;
+  tvl: number;
+  net_usd_value: number;
+  asset_usd_value: number;
+  debt_usd_value: number;
+}
+export interface NFTCollection {
+  create_at: string;
+  id: string;
+  is_core: boolean;
+  name: string;
+  price: number;
+  chain: string;
+  tokens: NFTItem[];
+}
+
+export interface UserCollection {
+  collection: Collection;
+  list: NFTItem[];
+}
+export interface NFTItem {
+  chain: string;
+  id: string;
+  contract_id: string;
+  inner_id: string;
+  token_id: string;
+  name: string;
+  contract_name: string;
+  description: string;
+  usd_price: number;
+  amount: number;
+  collection_id?: string;
+  pay_token: {
+    id: string;
+    name: string;
+    symbol: string;
+    amount: number;
+    logo_url: string;
+    time_at: number;
+    date_at?: string;
+    price?: number;
+  };
+  content_type: 'image' | 'image_url' | 'video_url' | 'audio_url';
+  content: string;
+  detail_url: string;
+  total_supply?: string;
+  collection?: Collection | null;
+  is_erc1155?: boolean;
+  is_erc721: boolean;
+}
+
+export interface Collection {
+  id: string;
+  name: string;
+  description: null | string;
+  logo_url: string;
+  is_core: boolean;
+  contract_uuids: string[];
+  create_at: number;
+}
+
+export interface TxDisplayItem extends TxHistoryItem {
+  projectDict: TxHistoryResult['project_dict'];
+  cateDict: TxHistoryResult['cate_dict'];
+  tokenDict: TxHistoryResult['token_dict'];
+}
+export interface TxHistoryItem {
+  cate_id: string | null;
+  chain: string;
+  debt_liquidated: null;
+  id: string;
+  other_addr: string;
+  project_id: null | string;
+  receives: Array<{
+    amount: number;
+    from_addr: string;
+    token_id: string;
+  }>;
+  sends: Array<{
+    amount: number;
+    to_addr: string;
+    token_id: string;
+  }>;
+  time_at: number;
+  token_approve: {
+    spender: string;
+    token_id: string;
+    value: number;
+  } | null;
+  tx: {
+    eth_gas_fee: number;
+    from_addr: string;
+    name: string;
+    params: any[];
+    status: number;
+    to_addr: string;
+    usd_gas_fee: number;
+    value: number;
+  } | null;
+}
+export interface TxHistoryResult {
+  cate_dict: Record<string, { id: string; name: string }>;
+  history_list: TxHistoryItem[];
+  project_dict: Record<
+    string,
+    {
+      chain: string;
+      id: string;
+      logo_url: string;
+      name: string;
+    }
+  >;
+  token_dict: Record<string, TokenItem>;
+}
+export interface GasResult {
+  estimated_gas_cost_usd_value: number;
+  estimated_gas_cost_value: number;
+  estimated_gas_used: number;
+  estimated_seconds: number;
+  front_tx_count: number;
+  max_gas_cost_usd_value: number;
+  max_gas_cost_value: number;
+  fail?: boolean;
+}
+
+export interface GasLevel {
+  level: string;
+  price: number;
+  front_tx_count: number;
+  estimated_seconds: number;
+  base_fee: number;
+}
+
+export interface BalanceChange {
+  err_msg: string;
+  receive_token_list: TokenItem[];
+  send_token_list: TokenItem[];
+  success: boolean;
+  usd_value_change: number;
+}
+export interface NFTContractItem {
+  id: string;
+  chain: string;
+  name: string;
+  symbol: string;
+  is_core: boolean;
+  time_at: number;
+  collection: {
+    id: string;
+    name: string;
+    create_at: number;
+  };
+}
+export interface ExplainTxResponse {
+  abi?: {
+    func: string;
+    params: Array<string[] | number | string>;
+  };
+  abiStr?: string;
+  balance_change: BalanceChange;
+  gas: {
+    estimated_gas_cost_usd_value: number;
+    estimated_gas_cost_value: number;
+    estimated_gas_used: number;
+    estimated_seconds: number;
+  };
+  native_token: TokenItem;
+  pre_exec: {
+    success: boolean;
+    err_msg: string;
+  };
+  recommend: {
+    gas: string;
+    nonce: string;
+  };
+  support_balance_change: true;
+  type_call?: {
+    action: string;
+    contract: string;
+    contract_protocol_logo_url: string;
+    contract_protocol_name: string;
+  };
+  type_send?: {
+    to_addr: string;
+    token_symbol: string;
+    token_amount: number;
+    token: TokenItem;
+  };
+  type_token_approval?: {
+    spender: string;
+    spender_protocol_logo_url: string;
+    spender_protocol_name: string;
+    token_symbol: string;
+    token_amount: number;
+    is_infinity: boolean;
+    token: TokenItem;
+  };
+  type_cancel_token_approval?: {
+    spender: string;
+    spender_protocol_logo_url: string;
+    spender_protocol_name: string;
+    token_symbol: string;
+  };
+  type_cancel_tx?: any; // TODO
+  type_deploy_contract?: any; // TODO
+  type_default?: any; // TODO
+  is_gnosis?: boolean;
+  gnosis?: ExplainTxResponse;
+  type_cancel_single_nft_approval?: {
+    spender: string;
+    spender_protocol_name: null;
+    spender_protocol_logo_url: string;
+    token_symbol: null;
+    is_nft: boolean;
+    nft: NFTItem;
+  };
+  type_cancel_nft_collection_approval?: {
+    spender: string;
+    spender_protocol_name: string;
+    spender_protocol_logo_url: string;
+    token_symbol: string;
+    is_nft: boolean;
+    nft_contract: NFTContractItem;
+    token: TokenItem;
+  };
+  type_nft_collection_approval?: {
+    spender: string;
+    spender_protocol_name: string;
+    spender_protocol_logo_url: string;
+    token_symbol: string;
+    is_nft: boolean;
+    nft_contract: NFTContractItem;
+    token: TokenItem;
+    token_amount: number;
+    is_infinity: boolean;
+  };
+  type_single_nft_approval?: {
+    spender: string;
+    spender_protocol_name: string;
+    spender_protocol_logo_url: string;
+    token_symbol: string;
+    is_nft: boolean;
+    nft: NFTItem;
+    token: TokenItem;
+    token_amount: number;
+    is_infinity: boolean;
+  };
+  type_nft_send?: {
+    spender: string;
+    spender_protocol_name: null;
+    spender_protocol_logo_url: string;
+    token_symbol: string;
+    token_amount: number;
+    is_infinity: boolean;
+    is_nft: boolean;
+    nft: NFTItem;
+  };
+}
+
+export interface RPCResponse<T> {
+  result: T;
+  id: number;
+  jsonrpc: string;
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+interface GetTxResponse {
+  blockHash: string;
+  blockNumber: string;
+  from: string;
+  gas: string;
+  gasPrice: string;
+  hash: string;
+  input: string;
+  nonce: string;
+  to: string;
+  transactionIndex: string;
+  value: string;
+  type: string;
+  v: string;
+  r: string;
+  s: string;
+  front_tx_count: number;
+  code: 0 | -1; // 0: success, -1: failed
+  status: -1 | 0 | 1; // -1: failed, 0: pending, 1: success
+  gas_used: number;
+  token: TokenItem;
+}
+
+const maxRPS = 100;
+
+class OpenApiService {
+  store!: OpenApiStore;
+  request = rateLimit(
+    axios.create({
+      headers: {
+        'X-Client': 'JWallet',
+        'X-Version': process.env.release!,
+      },
+      adapter: fetchAdapter,
+    }),
+    { maxRPS }
+  );
+
+  setHost = async (host: string) => {
+    this.store.host = host;
+    await this.init();
+  };
+
+  getHost = () => {
+    return this.store.host;
+  };
+
+  ethRpc:
+    | ((
+        arg: {
+          method: string;
+          params: any[];
+          origin?: string;
+        },
+        chainId?: number
+      ) => Promise<any>)
+    | (() => Promise<never>) = async () => {
+    throw ethErrors.provider.disconnected();
+  };
+
+  init = async () => {
+    this.store = await createPersistStore({
+      name: 'openapi',
+      template: {
+        host: INITIAL_OPENAPI_URL,
+        config: {
+          get_supported_chains: {
+            path: '/v1/wallet/supported_chains',
+            method: 'GET',
+            params: [],
+          },
+          get_total_balance: {
+            path: '/v1/user/total_balance',
+            method: 'GET',
+            params: ['id'],
+          },
+          get_total_balance_v2: {
+            path: '/v1/user/total_balance_v2',
+            method: 'GET',
+            params: ['id'],
+          },
+          get_pending_tx_count: {
+            path: '/v1/wallet/pending_tx_count',
+            method: 'GET',
+            params: ['user_addr'],
+          },
+          recommend_chains: {
+            path: '/v1/wallet/recommend_chains',
+            method: 'GET',
+            params: ['user_addr', 'origin'],
+          },
+          explain_origin: {
+            path: '/v1/wallet/explain_origin',
+            method: 'GET',
+            params: ['user_addr', 'origin'],
+          },
+          check_origin: {
+            path: '/v1/wallet/check_origin',
+            method: 'GET',
+            params: ['user_addr', 'origin'],
+          },
+          explain_text: {
+            path: '/v1/wallet/explain_text',
+            method: 'POST',
+            params: ['user_addr', 'origin', 'text'],
+          },
+          check_text: {
+            path: '/v1/wallet/check_text',
+            method: 'POST',
+            params: ['user_addr', 'origin', 'text'],
+          },
+          explain_tx: {
+            path: '/v1/wallet/explain_tx',
+            method: 'POST',
+            params: ['user_addr', 'origin', 'tx', 'update_nonce'],
+          },
+          check_tx: {
+            path: '/v1/wallet/check_tx',
+            method: 'POST',
+            params: ['user_addr', 'origin', 'tx'],
+          },
+          gas_market: {
+            path: '/v1/wallet/gas_market',
+            method: 'GET',
+            params: ['chain_id', 'custom_price'],
+          },
+          push_tx: {
+            path: '/v1/wallet/push_tx',
+            method: 'POST',
+            params: ['chain_id', 'tx'],
+          },
+          eth_rpc: {
+            path: 'v1/wallet/eth_rpc',
+            method: 'POST',
+            params: ['chain_id', 'method', 'params'],
+          },
+          get_tx: {
+            path: 'v1/wallet/get_tx',
+            method: 'GET',
+            params: ['chain_id', 'tx_id', 'gas_price'],
+          },
+          ens: { path: 'v1/wallet/ens', method: 'GET', params: ['text'] },
+          token_search: {
+            path: '/v1/user/token_search',
+            method: 'GET',
+            params: ['id', 'chain_id', 'q', 'has_balance'],
+          },
+          token_list: {
+            path: '/v1/user/token_list',
+            method: 'GET',
+            params: ['id', 'chain_id', 'is_all', 'has_balance'],
+          },
+          nft_collection_list: {
+            path: '/v1/nft/collections',
+            method: 'GET',
+            params: [],
+          },
+          user_token: {
+            path: '/v1/user/token',
+            method: 'GET',
+            params: ['id', 'chain_id', 'token_id'],
+          },
+          user_protocol: {
+            path: '/v1/user/protocol',
+            method: 'GET',
+            params: ['id', 'protocol_id'],
+          },
+          user_portfolio_list: {
+            path: '/v1/user/simple_protocol_list',
+            method: 'GET',
+            params: ['id', 'chain_id'],
+          },
+          user_nft_list: {
+            path: '/v1/user/nft_list',
+            method: 'GET',
+            params: ['id', 'chain_id'],
+          },
+          user_token_search: {
+            path: '/v1/user/token_search',
+            method: 'GET',
+            params: ['id', 'chain_id', 'q', 'has_balance'],
+          },
+          token_price_change: {
+            path: '/v1/token/price_change',
+            method: 'GET',
+            params: ['token'],
+          },
+          user_specific_token_list: {
+            path: '/v1/user/specific_token_list',
+            method: 'POST',
+            params: ['id', 'uuids'],
+          },
+          user_history_list: {
+            path: '/v1/user/history_list',
+            method: 'GET',
+            params: [
+              'id',
+              'chain_id',
+              'token_id',
+              'coin_id',
+              'start_time',
+              'page_count',
+            ],
+          },
+          user_token_authorized_list: {
+            path: '/v1/user/token_authorized_list',
+            method: 'GET',
+            params: ['id', 'chain_id'],
+          },
+          user_nft_authorized_list: {
+            path: '/v1/user/nft_authorized_list',
+            method: 'GET',
+            params: ['id', 'chain_id'],
+          },
+          swap_check: {
+            path: '/v1/wallet/swap_check',
+            method: 'GET',
+            params: [
+              'id',
+              'chain_id',
+              'dex_id',
+              'pay_token_id',
+              'pay_token_amount',
+              'receive_token_id',
+            ],
+          },
+        },
+      },
+    });
+
+    if (!process.env.DEBUG) {
+      this.store.host = INITIAL_OPENAPI_URL;
+    }
+
+    this.request = rateLimit(
+      axios.create({
+        baseURL: this.store.host,
+        headers: {
+          'X-Client': 'Jigstack',
+          'X-Version': process.env.release!,
+        },
+        adapter: fetchAdapter,
+      }),
+      { maxRPS }
+    );
+    this.request.interceptors.response.use((response) => {
+      const code = response.data?.err_code || response.data?.error_code;
+      const msg = response.data?.err_msg || response.data?.error_msg;
+
+      if (code && code !== 200) {
+        if (msg) {
+          let err;
+          try {
+            err = new Error(JSON.parse(msg));
+          } catch (e) {
+            err = new Error(msg);
+          }
+          throw err;
+        }
+        throw new Error(response.data);
+      }
+      return response;
+    });
+    this._mountMethods();
+  };
+
+  getConfig = async () => {
+    const { data } = await this.request.get<Record<string, OpenApiConfigValue>>(
+      `${this.store.host}/v1/wallet/config`
+    );
+    for (const key in data) {
+      data[key].method = data[key].method.toLowerCase() as Method;
+    }
+
+    this.store.config = data;
+  };
+
+  private _mountMethods = () => {
+    const config = this.store.config.eth_rpc;
+    if (!config) {
+      return;
+    }
+    this.ethRpc = async (
+      { origin = 'jigstack', method, params },
+      chainId?: number
+    ) => {
+      const currentChain =
+        chainId || permissionService.getCurrentNetworkTemporary();
+      try {
+        const network = permissionService.getNetworkByChainId(currentChain);
+        const ethProvider = new ethers.providers.JsonRpcProvider(
+          network?.rpcURL
+        );
+        const res = await ethProvider.send(method, params);
+        return res;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  };
+
+  getSupportedChains = async (): Promise<ServerChain[]> => {
+    return Promise.resolve([
+      {
+        community_id: 1,
+        id: 'eth',
+        logo_url:
+          'https://static.debank.com/image/chain/logo_url/eth/42ba589cd077e7bdd97db6480b0ff61d.png',
+        name: 'Ethereum',
+        native_token_id: 'eth',
+        wrapped_token_id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+        symbol: 'ETH',
+      },
+      {
+        community_id: 4,
+        id: 'eth',
+        logo_url:
+          'https://static.debank.com/image/chain/logo_url/eth/42ba589cd077e7bdd97db6480b0ff61d.png',
+        name: 'Rinkeby Test Network',
+        native_token_id: 'eth',
+        wrapped_token_id: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
+        symbol: 'RinkebyETH',
+      },
+      {
+        community_id: 56,
+        id: 'bsc',
+        logo_url:
+          'https://static.debank.com/image/chain/logo_url/bsc/7c87af7b52853145f6aa790d893763f1.png',
+        name: 'BSC',
+        native_token_id: 'bsc',
+        wrapped_token_id: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
+        symbol: 'BSC',
+      },
+      {
+        community_id: 100,
+        id: 'xdai',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 137,
+        id: 'matic',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 250,
+        id: 'ftm',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 66,
+        id: 'okt',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 128,
+        id: 'heco',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 43114,
+        id: 'avax',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 421611,
+        id: 'arb',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 10,
+        id: 'op',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 42220,
+        id: 'celo',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 1285,
+        id: 'movr',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 25,
+        id: 'cro',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 288,
+        id: 'boba',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 199,
+        id: 'btt',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 1088,
+        id: 'metis',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 1313161554,
+        id: 'aurora',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 1284,
+        id: 'mobm',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 10000,
+        id: 'sbch',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 122,
+        id: 'fuse',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 1666600000,
+        id: 'hmy',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 11297108109,
+        id: 'palm',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 592,
+        id: 'astar',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 336,
+        id: 'sdn',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 8217,
+        id: 'klay',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 4689,
+        id: 'iotx',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 30,
+        id: 'rsk',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 888,
+        id: 'wan',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 321,
+        id: 'kcc',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+      {
+        community_id: 19,
+        id: 'sgb',
+        logo_url: '',
+        name: '',
+        native_token_id: '',
+        wrapped_token_id: '',
+        symbol: '',
+      },
+    ]);
+  };
+
+  getRecommendChains = async (
+    address: string,
+    origin: string
+  ): Promise<ServerChain[]> => {
+    const config = this.store.config.recommend_chains;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          user_addr: address,
+          origin,
+        },
+      }
+    );
+    return data;
+  };
+
+  getTotalBalance = async (address: string): Promise<TotalBalanceResponse> => {
+    const config = this.store.config.get_total_balance_v2;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id: address,
+        },
+      }
+    );
+    return {
+      ...data,
+      chain_list: data.chain_list.filter(
+        (item) =>
+          !!Object.values(CHAINS).find((chain) => chain.serverId === item.id)
+      ),
+    };
+  };
+
+  getPendingCount = async (
+    address: string
+  ): Promise<{ total_count: number; chains: ChainWithPendingCount[] }> => {
+    const config = this.store.config.get_pending_tx_count;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          user_addr: address,
+        },
+      }
+    );
+    return data;
+  };
+
+  checkOrigin = async (
+    address: string,
+    origin: string
+  ): Promise<SecurityCheckResponse> => {
+    const config = this.store.config.check_origin;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          user_addr: address,
+          origin,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  checkText = async (
+    address: string,
+    origin: string,
+    text: string
+  ): Promise<SecurityCheckResponse> => {
+    const config = this.store.config.check_text;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        user_addr: address,
+        origin,
+        text,
+      }
+    );
+    return data;
+  };
+
+  checkTx = async (
+    tx: Tx,
+    origin: string,
+    address: string,
+    update_nonce = false
+  ): Promise<SecurityCheckResponse> => {
+    const config = this.store.config.check_tx;
+    try {
+      const { data } = await this.request[config.method.toLowerCase()](
+        config.path,
+        {
+          user_addr: address,
+          origin,
+          tx,
+          update_nonce,
+        }
+      );
+      if (data.error) {
+        throw new Error('Failed to check tx security');
+      }
+      return data;
+    } catch (error) {
+      throw new Error('Failed to check tx security');
+    }
+  };
+
+  explainTx = async (
+    tx: Tx,
+    origin: string,
+    address: string,
+    update_nonce = false
+  ): Promise<ExplainTxResponse | null> => {
+    try {
+      const config = this.store.config.explain_tx;
+      const { data } = await this.request[config.method.toLowerCase()](
+        config.path,
+        {
+          tx,
+          user_addr: address,
+          origin,
+          update_nonce,
+        }
+      );
+
+      return data;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  pushTx = async (tx: Tx, traceId?: string) => {
+    try {
+      const config = this.store.config.push_tx;
+      const { data } = await this.request[config.method.toLowerCase()](
+        config.path,
+        {
+          tx,
+          traceId,
+        }
+      );
+
+      return data;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  explainText = async (
+    origin: string,
+    address: string,
+    text: string
+  ): Promise<{ comment: string }> => {
+    const config = this.store.config.explain_text;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        user_addr: address,
+        origin,
+        text,
+      }
+    );
+
+    return data;
+  };
+
+  gasMarket = async (
+    chainId: string,
+    customGas?: number
+  ): Promise<GasLevel[]> => {
+    try {
+      const config = this.store.config.gas_market;
+
+      const { data } = await this.request[config.method.toLowerCase()](
+        config.path,
+        {
+          params: {
+            chain_id: chainId,
+            custom_price: customGas,
+          },
+        }
+      );
+      return data;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+
+  getTx = async (
+    chainId: string,
+    hash: string,
+    gasPrice: number
+  ): Promise<GetTxResponse> => {
+    const config = this.store.config.get_tx;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          chain_id: chainId,
+          gas_price: gasPrice,
+          tx_id: hash,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  getEnsAddressByName = async (
+    name: string
+  ): Promise<{ addr: string; name: string }> => {
+    const config = this.store.config.ens;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          text: name,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  searchToken = async (id: string, q: string): Promise<TokenItem[]> => {
+    const config = this.store.config.user_token_search;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          q,
+          has_balance: false,
+        },
+      }
+    );
+
+    return data?.filter((token) => getChain(token.chain));
+  };
+
+  getToken = async (
+    id: string,
+    chainId: string,
+    tokenId: string
+  ): Promise<TokenItem> => {
+    const config = this.store.config.user_token;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          chain_id: chainId,
+          token_id: tokenId,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  listToken = async (id: string, chainId: string): Promise<TokenItem[]> => {
+    const config = this.store.config.token_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          is_all: false,
+          chain_id: chainId,
+        },
+      }
+    );
+
+    return data?.filter((token) => getChain(token.chain));
+  };
+
+  customListToken = async (
+    uuids: string[],
+    id: string
+  ): Promise<TokenItem[]> => {
+    const config = this.store.config.user_specific_token_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        id,
+        uuids,
+      }
+    );
+
+    return data?.filter((token) => getChain(token.chain));
+  };
+
+  listChainAssets = async (id: string): Promise<AssetItem[]> => {
+    const config = this.store.config.user_portfolio_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+        },
+      }
+    );
+    return data;
+  };
+
+  listNFT = async (id: string, isAll = true): Promise<NFTItem[]> => {
+    const config = this.store.config.user_nft_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          is_all: isAll,
+        },
+      }
+    );
+    return data?.filter((nft) => getChain(nft.chain));
+  };
+
+  listCollection = async (): Promise<Collection[]> => {
+    const config = this.store.config.nft_collection_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {},
+      }
+    );
+    return data;
+  };
+
+  listTxHisotry = async (params: {
+    id?: string;
+    chain_id?: string;
+    token_id?: string;
+    coin_id?: string;
+    start_time?: number;
+    page_count?: number;
+  }): Promise<TxHistoryResult[]> => {
+    const config = this.store.config.user_history_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params,
+      }
+    );
+    return data;
+  };
+
+  tokenPrice = async (tokenName: string): Promise<string> => {
+    const config = this.store.config.token_price_change;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          token: tokenName,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  tokenAuthorizedList = async (
+    id: string,
+    chain_id: string
+  ): Promise<TokenApproval[]> => {
+    const config = this.store.config.user_token_authorized_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          chain_id,
+        },
+      }
+    );
+
+    return data;
+  };
+
+  userNFTAuthorizedList = async (
+    id: string,
+    chain_id: string
+  ): Promise<NFTApprovalResponse> => {
+    const config = this.store.config.user_nft_authorized_list;
+    const { data } = await this.request[config.method.toLowerCase()](
+      config.path,
+      {
+        params: {
+          id,
+          chain_id,
+        },
+      }
+    );
+
+    return data;
+  };
+}
+
+export default new OpenApiService();

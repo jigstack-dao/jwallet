@@ -1,0 +1,60 @@
+#network-dropdown {
+  margin-top: -12px !important;
+  .content {
+    border-radius: 1rem;
+    width: 254px;
+    max-height: 314px;
+    padding: 6px 0;
+    .line {
+      width: 254px;
+      height: 1px;
+      background: #ffffff;
+      opacity: 0.3;
+    }
+    .list {
+      color: white;
+      max-height: 265px;
+      overflow: auto;
+      .item {
+        width: 100%;
+        padding: 10px 21px;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 17px;
+        color: #e1dff0;
+        display: flex;
+        align-items: center;
+        div:nth-child(1) {
+          margin-right: 8px;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+    .add-network {
+      color: white;
+      display: flex;
+      padding: 16px 21px;
+      cursor: pointer;
+      height: 49px;
+      span:nth-child(1) {
+        margin-right: 8px;
+      }
+      span:nth-child(2) {
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 17px;
+      }
+    }
+  }
+}
+
+.selected-network-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  width: 100%;
+}

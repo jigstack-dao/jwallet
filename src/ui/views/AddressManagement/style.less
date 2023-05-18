@@ -1,0 +1,71 @@
+@import '../../style/var.less';
+
+.address-management {
+  .page();
+  height: 100vh;
+  padding-bottom: 118px;
+  .address-item-hidden {
+    background: @color-bg;
+    border-radius: 10px;
+    padding: 3px 7px;
+    color: @color-comment-2;
+    font-size: 12px;
+    margin-right: 12px;
+  }
+
+  .create-address {
+    display: flex;
+    color: @primary-text-color;
+    font-size: 15px;
+    line-height: 18px;
+    font-weight: 500;
+    justify-content: center;
+    margin-top: 24px;
+    .icon-add {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+  }
+
+  .no-address {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .no-data-image {
+      width: 280px;
+      height: 220px;
+    }
+    .no-data-add-btn {
+      width: 200px;
+      padding: 13px;
+      margin-top: 100px;
+      text-align: center;
+      background-color: rgba(134, 151, 255, 0.2);
+      color: @primary-text-color;
+      align-items: center;
+      justify-content: center;
+      .icon-plus {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+    }
+  }
+  .hint {
+    margin-left: 11px;
+  }
+}
+
+.custom-private-popup {
+  .private-field {
+    border-radius: 6px;
+    background-color: @color-bg;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 20px;
+    color: @color-title;
+    min-height: 160px;
+    overflow: auto;
+  }
+}

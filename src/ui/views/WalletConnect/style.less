@@ -1,0 +1,107 @@
+@import '../../style/var.less';
+.wallet-connect {
+  background: @color-bg;
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 36px;
+}
+@media (min-width: 401px) {
+  .wallet-connect .goback {
+    display: none;
+  }
+}
+.button-container {
+  width: 196px;
+  height: 32px;
+  margin: 32px auto 24px;
+  display: flex;
+  div {
+    width: 98px;
+    height: 28px;
+    margin: 2px 8px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    color: @color-white;
+    text-align: center;
+    border: 1px solid @color-white;
+  }
+  .active {
+    background: @color-white;
+    color: #5957d5;
+  }
+}
+.goback {
+  position: absolute;
+  color: #ffffff;
+  top: 38px;
+  left: 34px;
+  z-index: 100;
+}
+.qrcode {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  background: rgba(228, 234, 243, 0.25);
+  position: relative;
+  .refresh-container {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(228, 234, 243, 0.25);
+    opacity: 0.9;
+    z-index: 10;
+    border-radius: 12px;
+    .refresh-wrapper {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      left: 60px;
+      top: 60px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 8px;
+      .qrcode-refresh {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+      }
+    }
+  }
+}
+
+.url-container {
+  position: relative;
+  border-radius: 12px;
+  .ant-input-disabled {
+    color: @color-white;
+    background: rgba(228, 234, 243, 0.25);
+    cursor: default;
+  }
+}
+.icon-copy-wallet {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+}
+.icon-refresh-wallet {
+  .icon-copy-wallet;
+  position: absolute;
+  right: 46px;
+}
+.change-bridge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: @color-comment-2;
+  font-size: 12px;
+  cursor: pointer;
+  img {
+    margin-right: 4px;
+  }
+}

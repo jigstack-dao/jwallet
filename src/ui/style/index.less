@@ -1,0 +1,203 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@font-face {
+  font-family: 'GilroyLight';
+  src: url(fonts/Gilroy-Light.otf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url(fonts/Gilroy-Regular.otf) format('truetype');
+}
+
+@font-face {
+  font-family: 'GilroyExtraBold';
+  src: url(fonts/Gilroy-Extra-Bold.otf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Arimo';
+  src: url(fonts/Arimo.otf) format('truetype');
+}
+
+//reset css
+html,
+body {
+  font-family: 'Gilroy', 'GilroyLight', 'Helvetica', Arial, sans-serif;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.5px;
+}
+
+div,
+span,
+object,
+iframe,
+img,
+table,
+caption,
+thead,
+tbody,
+tfoot,
+tr,
+tr,
+td,
+article,
+aside,
+canvas,
+details,
+figure,
+hgroup,
+menu,
+nav,
+footer,
+header,
+section,
+summary,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border-collapse: separate;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+address,
+cite,
+code,
+del,
+dfn,
+em,
+ins,
+q,
+samp,
+small,
+strong,
+sub,
+sup,
+b,
+i,
+hr,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+legend,
+label {
+  font-size: 100%;
+  vertical-align: baseline;
+  margin: 0;
+  padding: 0;
+}
+
+article,
+aside,
+canvas,
+figure,
+figure img,
+figcaption,
+hgroup,
+footer,
+header,
+nav,
+section,
+audio,
+video {
+  display: block;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  caption,
+  th,
+  td {
+    text-align: left;
+    vertical-align: middle;
+  }
+}
+
+a img {
+  border: 0;
+}
+
+:focus {
+  outline: 0;
+}
+
+button {
+  &:focus {
+    outline: 0;
+    border: 0;
+  }
+}
+
+input {
+  &::placeholder {
+    color: white;
+    opacity: 0.7;
+  }
+}
+
+.hover-overlay {
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  &:active {
+    opacity: 0.8;
+  }
+
+  &__lighter {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    &:active {
+      opacity: 0.8;
+    }
+  }
+}
+
+.thin-scrollbar {
+  &::-webkit-scrollbar {
+    display: unset;
+    &-thumb {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+    &-track {
+      display: none;
+    }
+    &:vertical {
+      width: 5px;
+    }
+    &:horizontal {
+      height: 5px;
+    }
+  }
+}
+
+.no-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}

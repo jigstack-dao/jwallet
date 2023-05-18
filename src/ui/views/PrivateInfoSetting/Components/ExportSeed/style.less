@@ -1,0 +1,50 @@
+.export-seed-main {
+  height: 364px;
+  padding: 0 16px;
+  .menemonics {
+    margin-top: 36px;
+    &__title {
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 100%;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    &__content {
+      border: 1px solid white;
+      padding: 50px 35px;
+      border-radius: 12px;
+      width: 100%;
+      height: max-content;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &__text {
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 20px;
+        text-align: center;
+        font-family: 'GilroyExtraBold';
+      }
+    }
+    &__buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      div {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        span:nth-child(1) {
+          margin-right: 8px;
+        }
+        span:nth-child(2) {
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 100%;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+#santa-my-gift {
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    div:nth-child(1) {
+      margin-right: 12px;
+    }
+  }
+  .sort {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 18px 20px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid #ffffff;
+    filter: drop-shadow(0px 6px 35px rgba(0, 0, 0, 0.06));
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .gift-list {
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: -0.5rem;
+    padding-right: -0.5rem;
+    .gift-item {
+      cursor: pointer;
+      width: 50%;
+      padding: 0.5rem;
+      img {
+        margin-bottom: 16px;
+        width: 176px;
+        height: 176px;
+        border-radius: 12px;
+        object-fit: cover;
+      }
+      .gift-item-info {
+        color: white;
+        margin-right: 12px;
+        .gift-item-title {
+          font-weight: 600;
+          font-size: 14px;
+          line-height: 100%;
+          margin-bottom: 8px;
+        }
+        .gift-item-comment {
+          font-weight: 400;
+          font-size: 12px;
+          line-height: 14px;
+          color: #e1dff0;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          margin-bottom: 8px;
+        }
+        .gift-item-token {
+          display: flex;
+          align-items: center;
+          img {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            margin: auto 0;
+            margin-right: 12px;
+          }
+        }
+      }
+    }
+  }
+}

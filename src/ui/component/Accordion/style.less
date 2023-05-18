@@ -1,0 +1,20 @@
+.accordion {
+  margin-left: -1em;
+  margin-right: -1em;
+  &-header{
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+  &-content {
+    overflow: hidden;
+    max-height: 0;
+    padding: 0 1em;
+    transition: all 0.2s;
+
+    &.active {
+      overflow: auto;
+      max-height: 500vh;
+      padding: 1em;
+    }
+  }
+}

@@ -1,0 +1,38 @@
+.tab {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  position: relative;
+
+  @tab-width: 50%;
+  @tab-height: 40px;
+
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: @tab-width;
+    height: @tab-height;
+    font-weight: 20;
+
+    :hover {
+      cursor: pointer;
+    }
+
+    &.active {
+      font-weight: bold;
+    }
+  }
+
+  &-indicator {
+    width: calc(@tab-width - 2rem);
+    margin-left: 1rem;
+    height: 3px;
+    position: absolute;
+    bottom: 3px;
+    background-color: @color-white;
+    transition: all ease-in 0.25s;
+  }
+}

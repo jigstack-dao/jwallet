@@ -1,0 +1,68 @@
+#swap-container {
+  color: white;
+  width: 100%;
+  margin-top: 0;
+  min-height: 100%;
+  position: relative;
+
+  .bg-err {
+    background: rgba(255, 168, 119, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .header-balance {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .swap-icon {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    button {
+      width: max-content;
+      height: max-content;
+      padding: 8px;
+      border-radius: 100%;
+      &:hover {
+        background: #8e7cdd;
+      }
+    }
+  }
+
+  .max-button {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .execution {
+    height: calc(100vh - 200px);
+
+    &-title {
+      font-weight: bolder;
+      font-size: 2rem;
+      line-height: 2.25rem;
+      text-align: center;
+    }
+
+    &-loading {
+      width: 100%;
+      height: calc(100% - 2.25rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .advanced-option-button {
+    cursor: pointer;
+  }
+
+  .bg-text {
+    background: rgba(228, 234, 243, 0.25);
+  }
+}

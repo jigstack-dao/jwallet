@@ -1,0 +1,28 @@
+.tab-container {
+  width: 100%;
+  background: transparent;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 16px;
+  padding: 0 22px;
+  margin-bottom: 30px;
+  .item {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 6px 16px;
+    width: 103px;
+    height: 29px;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+    flex-grow: 0;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
+    cursor: pointer;
+  }
+  .active {
+    background: white;
+    color: #5957d5;
+  }
+}

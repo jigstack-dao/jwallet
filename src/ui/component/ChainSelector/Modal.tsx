@@ -1,0 +1,132 @@
+import React, { ReactNode, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { Drawer } from 'antd';
+
+import { Chain } from 'background/service/openapi';
+import { Account } from 'background/service/preference';
+import { useWallet } from 'ui/utils';
+import { CHAINS_ENUM, CHAINS } from 'consts';
+import eventBus from '@/eventBus';
+import ChainCard from '../ChainCard';
+import clsx from 'clsx';
+interface ChainSelectorModalProps {
+  open: boolean;
+  value: CHAINS_ENUM;
+  onCancel: () => void;
+  onChange: (val: CHAINS_ENUM) => void;
+  connection?: boolean;
+  title?: ReactNode;
+}
+
+const ChainSelectorModal = ({
+  title,
+  open,
+  onCancel,
+  onChange,
+  value,
+  connection = false,
+}: ChainSelectorModalProps) => {
+  value;
+  const wallet = useWallet();
+  const history = useHistory();
+  const [, setCurrentAccount] = useState<Account | null>(null);
+  const [savedChainsData, setSavedChainsData] = useState<Chain[]>([]);
+
+  const handleCancel = () => {
+    onCancel();
+  };
+
+  const handleChange = (val: CHAINS_ENUM) => {
+    onChange(val);
+  };
+  const goToChainManagement = () => {
+    history.push({
+      pathname: '/settings/chain',
+      state: {
+        connection,
+        backurl: history?.location?.pathname,
+      },
+    });
+  };
+  const init = async () => {
+    const savedChains = await wallet.getSavedChains();
+    const savedChainsData = savedChains
+      .map((item) => {
+        return Object.values(CHAINS).find((chain) => chain.enum === item);
+      })
+      .filter(Boolean);
+    setSavedChainsData(savedChainsData);
+  };
+
+  useEffect(() => {
+    init();
+    const accountChangeHandler = (data) => {
+      if (data?.address) {
+        setCurrentAccount(data);
+      }
+    };
+    eventBus.addEventListener('accountsChanged', accountChangeHandler);
+    return () => {
+      eventBus.removeEventListener('accountsChanged', accountChangeHandler);
+    };
+  }, []);
+  let maxHeight =
+    Math.round(savedChainsData.length / 2) * 64 + 74 + (title ? 56 : 0);
+  const range = [130, 450].map((item) => item + (title ? 56 : 0));
+  if (connection && maxHeight > 258) {
+    maxHeight = 258;
+  }
+  return (
+    <Drawer
+      title={title}
+      width="400px"
+      closable={false}
+      placement={'bottom'}
+      open={open}
+      onClose={handleCancel}
+      className={clsx('chain-selector__modal', connection && 'connection')}
+      contentWrapperStyle={{
+        height:
+          maxHeight > range[1]
+            ? range[1]
+            : maxHeight < range[0]
+            ? range[0]
+            : maxHeight,
+      }}
+      drawerStyle={{
+        height:
+          maxHeight > range[1]
+            ? range[1]
+            : maxHeight < range[0]
+            ? range[0]
+            : maxHeight,
+      }}
+      destroyOnClose
+    >
+      <>
+        {savedChainsData.length === 0 && (
+          <div className="no-pinned-container">No pinned chains</div>
+        )}
+        {savedChainsData.length > 0 && (
+          <ul className="chain-selector-options">
+            {savedChainsData.map((chain) => (
+              <ChainCard
+                chain={chain}
+                key={chain.id}
+                showIcon={false}
+                plus={false}
+                className="w-[176px] h-[56px]"
+                onClick={() => handleChange(chain.enum as CHAINS_ENUM)}
+              />
+            ))}
+          </ul>
+        )}
+        <div className="all-chais" onClick={goToChainManagement}>
+          <span>{'All chains >'}</span>
+        </div>
+      </>
+    </Drawer>
+  );
+};
+
+export default ChainSelectorModal;

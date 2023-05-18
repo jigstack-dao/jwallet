@@ -1,0 +1,174 @@
+.edit-contact-modal {
+  .address-viewer-text.normal {
+    color: #5a6066;
+    font-size: 14px;
+    line-height: 16px;
+  }
+  .ant-modal-header {
+    background: #ffffff;
+    border-bottom: 0;
+  }
+  .ant-drawer-content-wrapper {
+    box-shadow: 0px -12px 20px rgba(19, 20, 26, 0.04);
+    border-radius: 16px 16px 0px 0px;
+    overflow: hidden;
+    .ant-drawer-header {
+      border: none;
+      margin-bottom: 8px;
+      .ant-drawer-title {
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 23px;
+        text-align: center;
+        color: @color-title;
+      }
+      .ant-drawer-close {
+        display: none;
+      }
+    }
+    .ant-drawer-body {
+      padding: 0 20px;
+    }
+  }
+  .ant-input-affix-wrapper {
+    padding: 15px 16px;
+    border-radius: 6px;
+    background: @color-bg;
+    &::before {
+      display: none;
+    }
+  }
+  .ant-input {
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 18px;
+    color: #161819;
+    border-radius: 0;
+    background: @color-bg;
+  }
+
+  .remove-btn {
+    display: flex;
+    justify-content: center;
+    .ant-btn-link {
+      padding: 0;
+      height: auto;
+      margin-top: 16px;
+      span {
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 14px;
+        text-decoration-line: underline;
+        color: #707880;
+      }
+      &::before {
+        display: none;
+      }
+    }
+  }
+}
+.edit-contact-modal-with-remove {
+  .edit-contact-modal;
+  .ant-modal-content {
+    border-radius: 6px;
+    overflow: hidden;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    height: 245px;
+    background: #ffffff;
+    box-shadow: 0px -12px 20px rgba(19, 20, 26, 0.04);
+    border-radius: 16px 16px 0px 0px;
+  }
+}
+.list-contact-modal {
+  .ant-drawer-body {
+    padding-bottom: 0;
+    padding-top: 8px;
+  }
+  .ant-drawer-content-wrapper {
+    box-shadow: 0px -12px 20px rgb(35 47 129 / 10%);
+    border-radius: 16px 16px 0px 0px;
+    overflow: hidden;
+  }
+  .ant-tabs {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    .ant-tabs-nav {
+      height: 40px;
+      .ant-tabs-nav-list {
+        .ant-tabs-tab {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          padding: 12px 0 4px;
+          font-size: 14px;
+          background: transparent;
+          border: 0;
+          outline: none;
+          cursor: pointer;
+        }
+        .ant-tabs-tab + .ant-tabs-tab {
+          margin-left: 20px !important;
+        }
+        .ant-tabs-tab-btn {
+          font-size: 15px;
+          font-weight: 500;
+          color: @color-comment-1;
+        }
+        .ant-tabs-tab-active {
+          .ant-tabs-tab-btn {
+            font-size: 15px;
+            font-weight: 500;
+            color: #8697ff;
+          }
+        }
+      }
+      &::before {
+        display: none;
+      }
+    }
+    .ant-tabs-content-holder {
+      flex: 1;
+      overflow: auto;
+    }
+  }
+  .no-contact {
+    margin-top: 96px;
+    .no-data-image {
+      width: 156px;
+      margin: 0 auto 32px auto;
+    }
+  }
+
+  .field {
+    background-color: @color-bg !important;
+  }
+
+  .contact-info {
+    p {
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      &:nth-child(1) {
+        font-weight: 500;
+        font-size: 15px;
+        line-height: 18px;
+        color: #161819;
+        margin-bottom: 4px;
+      }
+      &:nth-child(2) {
+        margin-bottom: 0;
+        .address-viewer-text.normal {
+          font-size: 12px;
+          line-height: 14px;
+          color: #707880;
+          font-weight: normal;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+.transaction-history-card {
+  width: 100%;
+  height: 70px;
+  filter: drop-shadow(0px 6px 35px rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  .santa-icon{
+    &__orange {
+      circle{
+        stroke: #ffa877;
+      }
+      path{
+        fill: #ffa877;
+      }
+    }
+  }
+  .icon-status {
+    min-width: 26px;
+    min-height: 26px;
+    overflow: hidden;
+    border-radius: 100%;
+    margin-right: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    svg {
+      display: block;
+      object-fit: cover;
+    }
+
+    &__white{
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    &__orange {
+      background: rgba(255, 168, 119, 0.25);
+
+      svg {
+        path, rect{
+          fill: #ffa877;
+        }
+      }
+    }
+  }
+  .summary {
+    width: 100%;
+    &-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 17px;
+      margin-bottom: 4px;
+    }
+    &-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 500;
+      font-size: 11px;
+      line-height: 13px;
+      color: #e1dff0;
+      letter-spacing: 0;
+      .summary-bottom-col-1 {
+        display: flex;
+        align-items: center;
+        span {
+          margin-right: 2px;
+        }
+      }
+    }
+  }
+}

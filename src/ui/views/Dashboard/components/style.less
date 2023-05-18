@@ -1,0 +1,65 @@
+.bottom-btn {
+  width: calc(100% - 60px);
+  bottom: 1rem;
+  position: absolute;
+}
+.small-icon {
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+}
+
+.sites-item {
+  cursor: pointer;
+  &:hover {
+    color: #05c3dd;
+  }
+  .item {
+    width: 100% !important;
+    text-overflow: ellipsis;
+  }
+  .icon-trash {
+    width: 20%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+.modal-delete {
+  .ant-modal-content {
+    padding: 15px;
+    .ant-modal-close {
+      color: #fff;
+      width: 1.5rem;
+      height: 1.5rem;
+      top: 1rem;
+      right: 1rem;
+      border-radius: 4px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      &-x {
+        width: auto;
+        height: auto;
+        line-height: unset;
+      }
+    }
+  }
+  .title-popup-delete {
+    font-size: 20px;
+    margin-bottom: 30px;
+    font-weight: 600;
+  }
+}
+
+.more-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
