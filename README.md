@@ -1,4 +1,4 @@
-# Jigstack wallet [jWallet](https://wallet.jigstack.org/)]
+# Jigstack wallet [jWallet](https://wallet.jigstack.org/)
 
 Jigstack wallet is an open source browser plugin for the DeFi ecosystem, providing users with a better-to-use and more secure multi-chain experience.
 
