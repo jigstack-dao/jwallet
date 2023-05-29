@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Jigstack Wallet",
   "short_name": "jWallet",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "default_locale": "en",
   "description": "The most user-friendly EVM wallet for Ethereum and all EVM chains",
   "icons": {
